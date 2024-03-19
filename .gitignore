@@ -1,0 +1,11 @@
+.env
+
+/node_modules
+
+/cached/**/*
+
+!/cached/.gitkeep
+
+/.tmp-uploaded-files
+
+/.dist
