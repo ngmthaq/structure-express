@@ -48,7 +48,11 @@ app.use(
 /**
  * Use morgan logger middleware
  */
-app.use(morgan("combined"));
+app.use(
+  morgan(
+    `>> MORGAN :remote-addr - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"\n`
+  )
+);
 
 /**
  * Enable CORS with various options
@@ -117,7 +121,7 @@ app.use((req: Request, res: Response) => {
  * Error handling middleware
  */
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-  console.error(error);
+  console.log(">> Internal Server Error:", error);
   res.status(500);
   res.json(errorResponse(500, "Internal Server Error", error?.stack || []));
 });
