@@ -8,6 +8,7 @@ import methodOverride from "method-override";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import responseTime from "response-time";
+import Exception from "./exceptions/exception";
 import { errorResponse } from "../utils/response.utils";
 import createBrowserRouter from "../router";
 import "dotenv/config";
@@ -42,7 +43,7 @@ app.use(
       delete req.body._method;
       return method;
     }
-  })
+  }),
 );
 
 /**
@@ -50,8 +51,8 @@ app.use(
  */
 app.use(
   morgan(
-    `>> MORGAN :remote-addr - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"\n`
-  )
+    `>> MORGAN :remote-addr - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"\n`,
+  ),
 );
 
 /**
@@ -91,7 +92,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     secret: secretKey,
-  })
+  }),
 );
 
 /**
@@ -113,8 +114,7 @@ createBrowserRouter(app);
  * NotFound error handling middleware
  */
 app.use((req: Request, res: Response) => {
-  res.status(404);
-  res.json(errorResponse(404, "Not Found", []));
+  res.status(Exception.httpStatus.notFound).json(errorResponse(Exception.httpStatus.notFound, "Not Found", []));
 });
 
 /**
@@ -122,19 +122,25 @@ app.use((req: Request, res: Response) => {
  */
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   console.log(">> Internal Server Error:", error);
-  res.status(500);
-  res.json(errorResponse(500, "Internal Server Error", error?.stack || []));
+  res
+    .status(error?.code || Exception.httpStatus.internalServerError)
+    .json(
+      errorResponse(
+        error?.code || Exception.httpStatus.internalServerError,
+        error?.message || "Internal Server Error",
+        process.env.NODE_ENV === "production" ? [] : error?.details || [],
+      ),
+    );
 });
 
 /**
  * Application listening port
  */
 app.listen(port, () => {
-  console.clear();
   console.info(`|===========================================|`);
   console.info(`|                                           |`);
-  console.info(`|> Application listening on port: ${port}      |`);
-  console.info(`|> Host: http://localhost:${port}              |`);
+  console.info(`|>> Application listening on port: ${port}     |`);
+  console.info(`|>> Host: http://localhost:${port}             |`);
   console.info(`|                                           |`);
   console.info(`|===========================================|`);
   console.info("\n");

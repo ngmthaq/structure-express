@@ -5,9 +5,12 @@ module.exports = {
   target: "node",
   externalsPresets: { node: true },
   devtool: "inline-source-map",
-  entry: "./app/index.ts",
+  entry: {
+    index: "./app/index.ts",
+    migration: "./database/migration.ts",
+  },
   output: {
-    filename: "index.js",
+    filename: "[name].js",
     path: path.resolve(__dirname, ".dist"),
   },
   module: {

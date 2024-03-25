@@ -1,24 +1,38 @@
 import { ObjectId } from "mongodb";
 import MongoDatabase from "./mongo";
-
-type DatabaseFactoryKeyType = "default";
+import Exception from "../app/exceptions/exception";
 
 class DatabaseFactory {
-  private defaultMongoDatabse = new MongoDatabase();
+  /**
+   * Default database instance
+   */
+  private masterMongoDatabse = new MongoDatabase();
 
-  private async getDefaultMongoDatabase() {
-    this.defaultMongoDatabse.setURI(process.env.APP_DB_1);
-    await this.defaultMongoDatabse.connect();
-    return this.defaultMongoDatabse.getMongoClient();
+  /**
+   * Connect to default database
+   *
+   * @returns
+   */
+  private async getMasterMongoDatabase() {
+    this.masterMongoDatabse.setURI(process.env.APP_MASTER_DB_HOST);
+    await this.masterMongoDatabse.connect();
+    const client = this.masterMongoDatabse.getMongoClient();
+    return client.db(process.env.APP_MASTER_DB_HOST || "");
   }
 
-  public async getDatabase(name: DatabaseFactoryKeyType) {
+  /**
+   * Get database instance
+   *
+   * @param name
+   * @returns
+   */
+  public async getDatabase(name: DatabaseFactoryKey) {
     switch (name) {
-      case "default":
-        return this.getDefaultMongoDatabase();
+      case "master":
+        return this.getMasterMongoDatabase();
 
       default:
-        throw new Error("Invalid DatabaseFactoryKeyType");
+        throw new Exception("Invalid DatabaseFactoryKey", Exception.httpStatus.internalServerError, []);
     }
   }
 }
@@ -27,4 +41,6 @@ const databaseFactory = new DatabaseFactory();
 
 export default databaseFactory;
 
-export type { ObjectId, DatabaseFactoryKeyType };
+type DatabaseFactoryKey = "master";
+
+export type { ObjectId, DatabaseFactoryKey };

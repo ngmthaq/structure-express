@@ -1,14 +1,20 @@
 import { Request, Response } from "express";
-import databaseFactory from "../../database";
+import Controller from "./controller";
 
-class HomeController {
-  public async index(req: Request, res: Response) {
-    const client = await databaseFactory.getDatabase("default");
-    const collection = client.db("master").collection("users");
-    const cursor = collection.find({});
-    const users = await cursor.toArray();
-    res.status(200).json({ hello: users });
+export default class HomeController extends Controller {
+  public constructor() {
+    super();
+  }
+
+  /**
+   * Demo controller method
+   *
+   * @returns
+   */
+  public index() {
+    return async (req: Request, res: Response) => {
+      const response = { hello: "world" };
+      res.json(this.toSnake(response));
+    };
   }
 }
-
-export default new HomeController();
